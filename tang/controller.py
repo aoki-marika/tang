@@ -28,8 +28,9 @@ class Controller:
         """
 
         # create the socket
+        self.address = ('0.0.0.0', port) #always open to the local network
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.socket.bind(('0.0.0.0', port)) #always open to the local network
+        self.socket.bind(self.address)
         self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.socket.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
         self.is_open = False
@@ -62,8 +63,33 @@ class Controller:
             thread.start()
             self.receiving_threads.append(thread)
 
+        # log that the server is ready
+        print(f'[controller] listening on port: {self.address[1]}')
+
         for thread in self.receiving_threads:
             thread.join()
+
+    def close(self):
+        """
+        Close all existing connections to this controller's socket and close
+        said socket.
+        """
+
+        # an ugly hack but functional
+        # open split-second connections to satisfy the wait condition, thus
+        # continuing the loops and checking is_open, which will then terminate
+        # the threads properly
+        # TODO: prevent logging these connections
+
+        # log that this controller is closing to make it not so unclear why
+        # connections are being logged
+        print(f'[controller] closing...')
+
+        self.is_open = False
+        for _ in range(Controller.RECEIVING_THREAD_COUNT):
+            socket.socket(socket.AF_INET, socket.SOCK_STREAM).connect(self.address)
+
+        self.socket.close()
 
     def _receive_forever(self):
         """
