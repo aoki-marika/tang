@@ -1,4 +1,4 @@
-class CaptureModule():
+class CaptureModule:
     """
     The "capture" module for a controller, responsible for providing access to
     and metadata about the various screens connected to the server.

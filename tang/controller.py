@@ -2,6 +2,7 @@ import json
 import socket
 
 from threading import Thread
+from .rc4 import RC4
 from .modules import InfoModule, CaptureModule
 
 class Controller:
@@ -21,11 +22,18 @@ class Controller:
     """
     RECEIVING_DATA_SIZE = 64 * 1024
 
-    def __init__(self, port):
+    def __init__(self, port, password=None):
         """
         Args:
             port (int): The port on the local machine to host this controller on.
+            password (str): The password to use for encrypting data between this
+                controller and its clients, if any.
         """
+
+        if password:
+            self.cipher = RC4(password.encode('utf-8'))
+        else:
+            self.cipher = None
 
         # create the socket
         self.address = ('0.0.0.0', port) #always open to the local network
@@ -116,6 +124,10 @@ class Controller:
                     if not data:
                         break
 
+                    # decrypt the data if encryption is being used
+                    if self.cipher:
+                        data = self.cipher.crypt(data)
+
                     for byte in data:
                         # check for the terminator to process the preceding data
                         if byte == 0x0:
@@ -146,13 +158,17 @@ class Controller:
                                     print(f'[controller] error: {error}')
 
                             # construct and send the response
-                            response = {
+                            response = json.dumps({
                                 'id': id,
                                 'errors': response_errors,
                                 'data': response_data,
-                            }
+                            }).encode('utf-8') + b'\0'
 
-                            connection.send(json.dumps(response).encode('utf-8') + b'\0')
+                            # encrypt the response if encryption is being used
+                            if self.cipher:
+                                response = self.cipher.crypt(response)
+
+                            connection.send(response)
 
                             # wipe the buffer for the next request
                             message_buffer = bytearray(0)
