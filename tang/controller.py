@@ -143,8 +143,27 @@ class Controller:
 
                             # construct the response fields
                             try:
-                                module = self.modules[module]
-                                function = getattr(module, function)
+                                # get the module
+                                module = self.modules.get(module, None)
+                                if not module:
+                                    error = Exception()
+                                    error.message = 'Unknown module.'
+                                    raise error
+
+                                # ensure encryption is being used if its
+                                # required
+                                if module.requires_encryption and not self.cipher:
+                                    error = Exception()
+                                    error.message = 'Module requires the password to be set.'
+                                    raise error
+
+                                # get the function
+                                function = getattr(module, function, None)
+                                if not function:
+                                    error = Exception()
+                                    error.message = 'Unknown function.'
+                                    raise error
+
                                 response_errors = []
                                 response_data = function(*parameters)
                             except BaseException as error:

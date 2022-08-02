@@ -4,6 +4,9 @@ class InfoModule:
     the environment and program.
     """
 
+    def __init__(self):
+        self.requires_encryption = False
+
     def avs(__self__):
         """
         Get information about the Arcade Virtual System (AVS) module.
