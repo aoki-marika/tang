@@ -4,6 +4,7 @@ import socket
 from threading import Thread
 from .rc4 import RC4
 from .modules import InfoModule, CaptureModule
+from .exception import ControllerException
 
 class Controller:
     """
@@ -146,23 +147,17 @@ class Controller:
                                 # get the module
                                 module = self.modules.get(module, None)
                                 if not module:
-                                    error = Exception()
-                                    error.message = 'Unknown module.'
-                                    raise error
+                                    raise ControllerException('Unknown module.')
 
                                 # ensure encryption is being used if its
                                 # required
                                 if module.requires_encryption and not self.cipher:
-                                    error = Exception()
-                                    error.message = 'Module requires the password to be set.'
-                                    raise error
+                                    raise ControllerException('Module requires the password to be set.')
 
                                 # get the function
                                 function = getattr(module, function, None)
                                 if not function:
-                                    error = Exception()
-                                    error.message = 'Unknown function.'
-                                    raise error
+                                    raise ControllerException('Unknown function.')
 
                                 response_errors = []
                                 response_data = function(*parameters)

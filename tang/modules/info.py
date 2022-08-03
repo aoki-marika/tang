@@ -43,13 +43,6 @@ class InfoModule:
         Get information about the system memory.
         """
 
-#        info.AddMember("mem_total", memutils::mem_total(), alloc);
-#        info.AddMember("mem_total_used", memutils::mem_total_used(), alloc);
-#        info.AddMember("mem_used", memutils::mem_used(), alloc);
-#        info.AddMember("vmem_total", memutils::vmem_total(), alloc);
-#        info.AddMember("vmem_total_used", memutils::vmem_total_used(), alloc);
-#        info.AddMember("vmem_used", memutils::vmem_used(), alloc);
-
         return [
             {
                 "mem_total": 8 * 1000 * 1000,
